@@ -206,6 +206,8 @@ static void deparseExplainableStmt(StringInfo str, Node *node);
 static void deparseStmt(StringInfo str, Node *node);
 static void deparseValue(StringInfo str, Value *value, DeparseNodeContext context);
 
+static PgQueryDeparseResult pg_query_deparse_expr_protobuf(PgQueryProtobuf parse_tree);
+
 // "any_name" in gram.y
 static void deparseAnyName(StringInfo str, List *parts)
 {
@@ -9902,6 +9904,18 @@ static void deparseStmt(StringInfo str, Node *node)
 			break;
 		default:
 			elog(ERROR, "deparse: unsupported top-level node type: %u", nodeTag(node));
+	}
+}
+
+PgQueryDeparseResult pg_query_deparse_node_protobuf(enum DeparseType deparse_type, PgQueryProtobuf parse_tree)
+{
+	switch (deparse_type)
+	{
+		case deparse_type_expr:
+			return pg_query_deparse_expr_protobuf(parse_tree);
+			break;
+		default:
+			elog(ERROR, "deparse node: unsupported deparse type: %d", deparse_type);
 	}
 }
 
