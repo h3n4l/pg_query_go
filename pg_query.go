@@ -1,10 +1,38 @@
 package pg_query
 
 import (
+	"fmt"
+
 	proto "github.com/golang/protobuf/proto"
 
 	"github.com/pganalyze/pg_query_go/v2/parser"
 )
+
+type DeparseType int
+
+const (
+	DeparseTypeExpr DeparseType = iota
+)
+
+func DeparseNode(tp DeparseType, node *Node) (output string, err error) {
+	switch tp {
+	case DeparseTypeExpr:
+		tree := &ParseResult{
+			Stmts: []*RawStmt{
+				{
+					Stmt: node,
+				},
+			},
+		}
+		protobufTree, err := proto.Marshal(tree)
+		if err != nil {
+			return "", err
+		}
+		return parser.DeparseNodeFromProtobuf(int(tp), protobufTree)
+	default:
+		return "", fmt.Errorf("deparse node failed: unsupported deparse type %d", tp)
+	}
+}
 
 func Scan(input string) (result *ScanResult, err error) {
 	protobufScan, err := parser.ScanToProtobuf(input)
